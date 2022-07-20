@@ -25,6 +25,8 @@ const (
 	SLASH    = "/"
 	LT       = "<"
 	GT       = ">"
+	EQ       = "=="
+	NOT_EQ   = "!="
 
 	// Delimiters
 	COMMA     = ","
@@ -35,13 +37,23 @@ const (
 	RBRACE    = "}"
 
 	// Keywords
-	FUNC = "FUNC"
-	VAR  = "VAR"
+	FUNC   = "FUNC"
+	VAR    = "VAR"
+	TRUE   = "TRUE"
+	FALSE  = "FALSE"
+	IF     = "IF"
+	ELSE   = "ELSE"
+	RETURN = "RETURN"
 )
 
 var keywords = map[string]TokenType{
-	"fn":  FUNC,
-	"var": VAR,
+	"fn":     FUNC,
+	"var":    VAR,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 // LookUpIdent checks the keywords table to see whether the given identifier is
