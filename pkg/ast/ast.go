@@ -1,12 +1,16 @@
 package ast
 
-import "monkey/pkg/token"
+import (
+	"bytes"
+	"monkey/pkg/token"
+)
 
 // Node is an interface that every node in the AST has to implement.
 type Node interface {
-	// TokenLiteral returns the literal valur of the token it's associated with. Its
+	// TokenLiteral returns the literal valur of the token it's associated with. Is
 	// used for debugging and testing.
 	TokenLiteral() string
+	String() string
 }
 
 type Statement interface {
@@ -34,6 +38,16 @@ func (p *Program) TokenLiteral() string {
 	return ""
 }
 
+func (p *Program) String() string {
+	var out bytes.Buffer
+
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
+
 type VarStatement struct {
 	Token token.Token // the token.VAR token
 	Name  *Identifier // holds the identifier of the binding
@@ -44,6 +58,22 @@ func (v *VarStatement) statementNode() {}
 
 func (v *VarStatement) TokenLiteral() string {
 	return v.Token.Literal
+}
+
+func (v *VarStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(v.TokenLiteral() + " ")
+	out.WriteString(v.Name.String())
+	out.WriteString(" = ")
+
+	if v.Value != nil {
+		out.WriteString(v.Value.String())
+	}
+
+	out.WriteString(";")
+
+	return out.String()
 }
 
 type Identifier struct {
@@ -57,6 +87,10 @@ func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal
 }
 
+func (i *Identifier) String() string {
+	return i.Value
+}
+
 type ReturnStatement struct {
 	Token       token.Token // the 'return' keyword
 	ReturnValue Expression
@@ -66,4 +100,36 @@ func (s *ReturnStatement) statementNode() {}
 
 func (s *ReturnStatement) TokenLiteral() string {
 	return s.Token.Literal
+}
+
+func (s *ReturnStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(s.TokenLiteral() + " ")
+	if s.ReturnValue != nil {
+		out.WriteString(s.ReturnValue.String())
+	}
+
+	out.WriteString(s.TokenLiteral() + ";")
+
+	return out.String()
+}
+
+type ExpressionStatement struct {
+	Token      token.Token // the first token of the expression
+	Expression Expression
+}
+
+func (e *ExpressionStatement) statementNode() {}
+
+func (e *ExpressionStatement) TokenLiteral() string {
+	return e.Token.Literal
+}
+
+func (e *ExpressionStatement) String() string {
+	if e.Expression != nil {
+		return e.Expression.String()
+	}
+
+	return ""
 }
