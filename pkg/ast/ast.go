@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"monkey/pkg/token"
+	"strings"
 )
 
 // Node is an interface that every node in the AST has to implement.
@@ -167,6 +168,153 @@ func (p *PrefixExpression) String() string {
 	out.WriteString("(")
 	out.WriteString(p.Operator)
 	out.WriteString(p.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+type InfixExpression struct {
+	Token    token.Token // the operator token
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+func (i *InfixExpression) expressionNode() {}
+
+func (i *InfixExpression) TokenLiteral() string {
+	return i.Token.Literal
+}
+
+func (i *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(i.Left.String())
+	out.WriteString(" " + i.Operator + " ")
+	out.WriteString(i.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) expressionNode() {}
+
+func (b *Boolean) TokenLiteral() string {
+	return b.Token.Literal
+}
+
+func (b *Boolean) String() string {
+	return b.Token.Literal
+}
+
+type IfExpression struct {
+	Token       token.Token // the "if" token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (e *IfExpression) expressionNode() {}
+
+func (e *IfExpression) TokenLiteral() string {
+	return e.Token.Literal
+}
+
+func (e *IfExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(e.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(e.Consequence.String())
+
+	if e.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(e.Alternative.String())
+	}
+
+	return out.String()
+}
+
+type BlockStatement struct {
+	Token      token.Token // the { token
+	Statements []Statement
+}
+
+func (s *BlockStatement) statementNode() {}
+
+func (s *BlockStatement) TokenLiteral() string {
+	return s.Token.Literal
+}
+
+func (s *BlockStatement) String() string {
+	var out bytes.Buffer
+
+	for _, s := range s.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token // the 'fn' token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (f *FunctionLiteral) expressionNode() {}
+
+func (f *FunctionLiteral) TokenLiteral() string {
+	return f.Token.Literal
+}
+
+func (f *FunctionLiteral) String() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(f.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(")")
+	out.WriteString(f.Body.String())
+
+	return out.String()
+}
+
+type CallExpression struct {
+	Token     token.Token // the '(' token
+	Func      Expression
+	Arguments []Expression
+}
+
+func (c *CallExpression) expressionNode() {}
+
+func (c *CallExpression) TokenLiteral() string {
+	return c.Token.Literal
+}
+
+func (c *CallExpression) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range c.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(c.Func.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
 
 	return out.String()
