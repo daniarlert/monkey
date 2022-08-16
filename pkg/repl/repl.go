@@ -6,13 +6,15 @@ import (
 	"io"
 	"monkey/pkg/eval"
 	"monkey/pkg/lexer"
+	"monkey/pkg/object"
 	"monkey/pkg/parser"
 )
 
-const PROMPT = ">>"
+const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnv()
 
 	for {
 		fmt.Fprint(out, PROMPT)
@@ -32,7 +34,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := eval.Eval(program)
+		evaluated := eval.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
