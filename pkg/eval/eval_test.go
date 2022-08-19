@@ -187,6 +187,59 @@ func TestVarStatement(t *testing.T) {
 	}
 }
 
+func TestFunctionObject(t *testing.T) {
+	input := "fn(x) { x + 2; };"
+	evaluated := testEval(input)
+	fn, ok := evaluated.(*object.Func)
+	if !ok {
+		t.Fatalf("object is not Func. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if len(fn.Parameters) != 1 {
+		t.Fatalf("function has wrong number of parameters. Parameters=%+v", fn.Parameters)
+	}
+
+	if fn.Parameters[0].String() != "x" {
+		t.Fatalf("parameter is not 'x'. got=%q", fn.Parameters[0])
+	}
+
+	expectedBody := "(x + 2)"
+	if fn.Body.String() != expectedBody {
+		t.Fatalf("body is not %q. got=%q", expectedBody, fn.Body.String())
+	}
+}
+
+func TestFunctionApplication(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"var identity = fn(x) { x; }; identity(5);", 5},
+		{"var identity = fn(x) { return x; }; identity(5);", 5},
+		{"var double = fn(x) { x * 2; }; double(5);", 10},
+		{"var add = fn(x, y) { x + y; }; add(5, 5);", 10},
+		{"var add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
+		{"fn(x) { x; }(5)", 5},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestClosures(t *testing.T) {
+	input := `
+		var newAdder = fn(x) {
+			fn(y) { x + y };
+		};
+
+		var addTwo = newAdder(2);
+		addTwo(2);
+	`
+
+	testIntegerObject(t, testEval(input), 4)
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
