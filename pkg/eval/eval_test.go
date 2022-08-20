@@ -240,6 +240,20 @@ func TestClosures(t *testing.T) {
 	testIntegerObject(t, testEval(input), 4)
 }
 
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+	evaluated := testEval(input)
+
+	s, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if s.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", s.Value)
+	}
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)

@@ -29,7 +29,7 @@ func (l *Lexer) readChar() {
 }
 
 // readInteger points to the next character and advances the read and current positions
-// in the input string until it read the entire number character by character.
+// in the input string until it reads the entire number character by character.
 func (l *Lexer) readInteger() string {
 	pos := l.pos
 	for isDigit(l.ch) {
@@ -40,12 +40,29 @@ func (l *Lexer) readInteger() string {
 }
 
 // readIdent reads in an identifier and advances the lexer position until it
-// encounter a non-letter character.
+// encounters a non-letter character.
 func (l *Lexer) readIdent() string {
 	pos := l.pos
 
 	for isLetter(l.ch) {
 		l.readChar()
+	}
+
+	return l.input[pos:l.pos]
+}
+
+// readString points to the next character and advances the read and current positions
+// until it encounters a closing '"" or EOF
+func (l *Lexer) readString() string {
+	// TODO: add support for character scaping
+
+	pos := l.pos + 1
+
+	for {
+		l.readChar()
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
 	}
 
 	return l.input[pos:l.pos]
@@ -93,6 +110,9 @@ func (l *Lexer) NextToken() token.Token {
 	l.eatWhitespace()
 
 	switch l.ch {
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.readString()
 	case '=':
 		if l.peek() == '=' {
 			ch := l.ch
